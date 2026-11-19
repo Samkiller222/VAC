@@ -8,6 +8,7 @@ state.load();
 server.start();
 
 console.log(`Mode: ${config.mock ? 'MOCK (simulated results)' : 'LIVE (real TCP checks)'} | every ${config.intervalMs / 1000}s | DOWN after ${config.failThreshold} fails`);
+console.log(`VAC list: ${config.offices.length} VACs from ${config.officesFile}`);
 
 const tick = () => runCycle().catch((err) => console.error('Cycle failed:', err));
 tick();

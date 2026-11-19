@@ -1,0 +1,29 @@
+# systemd service for the VAC monitor (Linux).
+# Copy to /etc/systemd/system/vac-monitor.service, then:
+#   sudo systemctl daemon-reload && sudo systemctl enable --now vac-monitor
+# Settings live in /etc/vac-monitor/vac-monitor.env (see DEPLOYMENT.md), not in this file.
+
+[Unit]
+Description=VAC to Toppan connectivity monitor
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=vacmon
+Group=vacmon
+WorkingDirectory=/opt/vac-monitor
+EnvironmentFile=/etc/vac-monitor/vac-monitor.env
+ExecStart=/usr/bin/node /opt/vac-monitor/index.js
+Restart=always
+RestartSec=5
+
+# Hardening: the app only needs to read its code and config, and write its history.
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/var/lib/vac-monitor
+
+[Install]
+WantedBy=multi-user.target

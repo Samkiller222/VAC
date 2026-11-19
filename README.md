@@ -14,6 +14,10 @@ npm start          # checks every 5 minutes
 
 Open http://localhost:3000.
 
+## Going live
+
+See **[DEPLOYMENT.md](DEPLOYMENT.md)**: where the real tunnel IPs go (a private file on the server, never in this repo), running it as a service on a server inside the government network, HTTPS, and access control.
+
 ## Online demo (GitHub Pages)
 
 https://samkiller222.github.io/VAC/ runs a **static demo**: GitHub Pages can't run the Node server, so when the dashboard finds no server behind it, `public/mock.js` runs the whole mock monitor in the visitor's browser (checks every 10 s, 24 h of seeded history, test menu included). Each visitor gets their own simulation; nothing is shared or saved.
@@ -50,6 +54,8 @@ The menu and its API (`/api/test`) **only work in mock mode**. With `MOCK=0` the
 | Variable | Default | What it does |
 | --- | --- | --- |
 | `MOCK` | `1` | `0` = real TCP checks. **Only on an approved machine inside the work network.** |
+| `OFFICES_FILE` | `config/offices.json` | Path to the VAC list. In production: a **private** file on the server with the real tunnel endpoints |
+| `DATA_DIR` | `data/` | Where check history is stored |
 | `INTERVAL_MS` | `300000` | Time between check cycles (5 min) |
 | `TIMEOUT_MS` | `5000` | How long one check waits for a connection |
 | `FAIL_THRESHOLD` | `3` | Failed checks in a row before a link is DOWN and an alert is sent |

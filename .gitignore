@@ -1,3 +1,6 @@
 node_modules/
 data/
 .env
+# Real VAC list with tunnel endpoints - keep it on the server only, never commit it
+offices.private.json
+config/*.private.json

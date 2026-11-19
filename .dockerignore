@@ -1,0 +1,9 @@
+.git
+data
+node_modules
+deploy
+tools
+*.md
+index.html
+.nojekyll
+*.private.json
