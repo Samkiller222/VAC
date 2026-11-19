@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VAC → Toppan Connectivity</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <div>
+      <h1>VAC → Toppan Connectivity</h1>
+      <p id="meta" class="muted">Loading…</p>
+    </div>
+    <div class="legend">
+      <span><i class="up"></i>Up</span>
+      <span><i class="warn"></i>Some failed checks</span>
+      <span><i class="down"></i>Down</span>
+      <span><i class="closed"></i>Closed</span>
+      <span><i class="none"></i>No data</span>
+    </div>
+  </header>
+
+  <section id="diagnosis" hidden></section>
+
+  <h2>VAC locations <span class="muted">· live status</span></h2>
+  <div id="map" class="map"></div>
+
+  <h2>VAC → Toppan links <span class="muted">· last 24 hours, one cell per hour</span></h2>
+  <div id="heatmap"></div>
+
+  <script src="app.js"></script>
+  <script src="test.js"></script>
+</body>
+</html>

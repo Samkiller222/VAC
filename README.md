@@ -1,0 +1,66 @@
+# VAC → Toppan connectivity monitor (skeleton)
+
+Checks each VFS Global VAC's link to Toppan on a schedule and shows the results as a heatmap dashboard. No dependencies, Node 18+.
+
+**Runs in mock mode by default** (simulated outages, placeholder IPs), so it can be demoed without any network access.
+
+## Run
+
+```bash
+npm run seed       # optional: fill 24 h of simulated history so the heatmap looks full
+npm run demo       # checks every 5 seconds
+npm start          # checks every 5 minutes
+```
+
+Open http://localhost:3000.
+
+## Hidden test menu
+
+Type **`test`** anywhere on the dashboard (or open `/#test`). Esc closes it.
+
+- **Run check now**: runs a check cycle immediately instead of waiting for the interval
+- **All down / All up / Clear overrides**: force every VAC's result, or go back to normal mock behaviour
+- **Per-VAC dropdown**: Normal, Force up or Force down for one VAC
+- **Reseed 24 h history / Wipe history**: refill the heatmap with mock data, or clear it (click twice to confirm)
+- **Ignore office hours**: treats every VAC as open, so outages show red at any time of day
+
+A VAC turns DOWN after 3 failed checks, so after forcing one down press **Run check now** three times to see it straight away.
+
+The menu and its API (`/api/test`) **only work in mock mode**. With `MOCK=0` they return 404. Set `TEST_MENU=0` to switch the menu off in mock mode too. If you host it anywhere others can reach, set `DASH_USER` / `DASH_PASS`, since anyone who opens the dashboard could otherwise use the menu.
+
+## Settings (environment variables)
+
+| Variable | Default | What it does |
+| --- | --- | --- |
+| `MOCK` | `1` | `0` = real TCP checks. **Only on an approved machine inside the work network.** |
+| `INTERVAL_MS` | `300000` | Time between check cycles (5 min) |
+| `TIMEOUT_MS` | `5000` | How long one check waits for a connection |
+| `FAIL_THRESHOLD` | `3` | Failed checks in a row before a link is DOWN and an alert is sent |
+| `CONCURRENCY` | `20` | How many checks run at once |
+| `RETENTION_DAYS` | `7` | How long check history is kept |
+| `PORT` | `3000` | Dashboard port |
+| `ALERT_WEBHOOK` | – | Teams/Slack-style webhook URL for DOWN/RECOVERED alerts |
+| `DASH_USER` / `DASH_PASS` | – | Set both to put a login on the dashboard |
+| `MOCK_DOWN` | – | Mock mode only: comma-separated VAC ids to force down at start-up, e.g. `del,dac` |
+| `TEST_MENU` | `1` | `0` = disable the hidden test menu |
+
+## Files
+
+```
+config/offices.json   VACs: name, region, rough lat/lon (city level is fine), time zone, working hours, host, port
+src/checker.js        TCP check (used instead of ping, which is often blocked) + mock mode
+src/hours.js          working hours per VAC time zone -> grey "closed" cells
+src/state.js          UP / WARN / DOWN / CLOSED logic + history file (data/history.jsonl)
+src/alerts.js         DOWN / RECOVERED alerts (console + optional webhook)
+src/monitor.js        one check cycle + diagnosis (one VAC down = local; most down = shared problem)
+src/server.js         dashboard + JSON API (/api/status, /api/history)
+public/               dashboard (world map, heatmap, diagnosis box); world.svg = offline map outline
+tools/make-world-svg.js  regenerates public/world.svg from Natural Earth data (only needed if you want a different map)
+```
+
+## Notes
+
+- Host and port are never sent to the browser; the API returns names and statuses only.
+- `config/offices.json` uses documentation IP ranges. Real endpoints should stay on the approved internal machine and never go into a public repo.
+- To confirm with IT / VFS Global / Toppan: which endpoint and port represents each VAC's link to Toppan.
+- Not built yet: a real database, user accounts, per-VAC alert routing.

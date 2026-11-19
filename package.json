@@ -1,0 +1,13 @@
+{
+  "name": "office-monitor",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Skeleton connectivity monitor and heatmap dashboard for VFS Global offices -> Frankfurt DC -> MITA -> Toppan",
+  "main": "index.js",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "start": "node index.js",
+    "demo": "INTERVAL_MS=5000 node index.js",
+    "seed": "node seed-demo.js"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "_note": "Placeholder data. lat/lon only need to be roughly right (city level) - they place the dot on the map. host/port = whatever endpoint represents this VAC's link to Toppan (e.g. its VPN tunnel endpoint) - confirm with IT. Hosts use documentation IP ranges (192.0.2.x). Never commit real IPs to a public repo.",
+  "offices": [
+    { "id": "dxb", "name": "Dubai",       "country": "UAE",        "region": "Middle East", "lat": 25.2, "lon": 55.3,  "timezone": "Asia/Dubai",       "hours": { "days": [1,2,3,4,5], "open": 8, "close": 17 }, "host": "192.0.2.10", "port": 443 },
+    { "id": "bom", "name": "Mumbai",      "country": "India",      "region": "South Asia",  "lat": 19.1, "lon": 72.9,  "timezone": "Asia/Kolkata",     "hours": { "days": [1,2,3,4,5], "open": 8, "close": 17 }, "host": "192.0.2.11", "port": 443 },
+    { "id": "del", "name": "New Delhi",   "country": "India",      "region": "South Asia",  "lat": 28.6, "lon": 77.2,  "timezone": "Asia/Kolkata",     "hours": { "days": [1,2,3,4,5], "open": 8, "close": 17 }, "host": "192.0.2.12", "port": 443 },
+    { "id": "ktm", "name": "Kathmandu",   "country": "Nepal",      "region": "South Asia",  "lat": 27.7, "lon": 85.3,  "timezone": "Asia/Kathmandu",   "hours": { "days": [0,1,2,3,4], "open": 9, "close": 17 }, "host": "192.0.2.13", "port": 443 },
+    { "id": "dac", "name": "Dhaka",       "country": "Bangladesh", "region": "South Asia",  "lat": 23.8, "lon": 90.4,  "timezone": "Asia/Dhaka",       "hours": { "days": [0,1,2,3,4], "open": 9, "close": 17 }, "host": "192.0.2.14", "port": 443 },
+    { "id": "pek", "name": "Beijing",     "country": "China",      "region": "East Asia",   "lat": 39.9, "lon": 116.4, "timezone": "Asia/Shanghai",    "hours": { "days": [1,2,3,4,5], "open": 8, "close": 17 }, "host": "192.0.2.15", "port": 443 },
+    { "id": "sha", "name": "Shanghai",    "country": "China",      "region": "East Asia",   "lat": 31.2, "lon": 121.5, "timezone": "Asia/Shanghai",    "hours": { "days": [1,2,3,4,5], "open": 8, "close": 17 }, "host": "192.0.2.16", "port": 443 },
+    { "id": "was", "name": "Washington",  "country": "USA",        "region": "Americas",    "lat": 38.9, "lon": -77.0, "timezone": "America/New_York", "hours": { "days": [1,2,3,4,5], "open": 8, "close": 17 }, "host": "192.0.2.17", "port": 443 },
+    { "id": "nyc", "name": "New York",    "country": "USA",        "region": "Americas",    "lat": 40.7, "lon": -74.0, "timezone": "America/New_York", "hours": { "days": [1,2,3,4,5], "open": 8, "close": 17 }, "host": "192.0.2.18", "port": 443 }
+  ]
+}
