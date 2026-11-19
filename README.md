@@ -20,6 +20,8 @@ https://samkiller222.github.io/VAC/ runs a **static demo**: GitHub Pages can't r
 
 Pages setting: deploy from branch `main`, folder `/ (root)`. The root `index.html` forwards to `public/`.
 
+GitHub Pages lets browsers cache files for up to 10 minutes. The CSS and JS links in `public/index.html` carry a version tag (`?v=...`): **change it whenever you change those files**, so browsers never mix old and new files.
+
 ## Dashboard features
 
 - **World map**: one dot per VAC, coloured by live status. Hover a dot to see the VAC's name, status and when it was last reached.

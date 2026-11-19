@@ -27,9 +27,9 @@
     if (forced === 'down') return { ok: false };
     if (forced === 'up') return { ok: true };
     let remaining = outages.get(o.id) || 0;
-    if (remaining === 0 && Math.random() < 0.02) remaining = 3 + Math.floor(Math.random() * 6);
+    if (remaining === 0 && Math.random() < 0.003) remaining = 3 + Math.floor(Math.random() * 6);
     if (remaining > 0) { outages.set(o.id, remaining - 1); return { ok: false }; }
-    return { ok: Math.random() >= 0.03 };
+    return { ok: Math.random() >= 0.01 };
   }
 
   function record(id, result, open) {
@@ -136,7 +136,7 @@
   }
 
   async function start() {
-    const data = await fetch('../config/offices.json').then((r) => r.json());
+    const data = await fetch('../config/offices.json', { cache: 'no-store' }).then((r) => r.json());
     // Keep only what the dashboard needs; host/port are never used in the browser.
     offices = data.offices.map(({ host, port, ...rest }) => rest);
     seed(24);

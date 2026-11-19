@@ -143,7 +143,7 @@ function renderMap(offices) {
   const X = (lon) => ((lon + 180) / 360) * 1000;
   const Y = (lat) => ((90 - lat) / 180) * 500;
   const svg = svgEl('svg', { viewBox: '0 14 1000 400', role: 'img', 'aria-label': 'Map of VAC locations and status' });
-  svg.append(svgEl('image', { href: 'world.svg', x: 0, y: 14, width: 1000, height: 400 }));
+  svg.append(svgEl('image', { href: 'world.svg?v=20261119c', x: 0, y: 14, width: 1000, height: 400 }));
 
   // Draw problems (and search matches) last so they sit on top of nearby healthy dots
   const order = { DOWN: 3, WARN: 2, UP: 1 };
