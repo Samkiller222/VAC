@@ -1,14 +1,11 @@
 // Hidden test menu. Open it by typing  t e s t  anywhere on the page, or by adding #test to the URL.
-// Esc closes it. It only appears when the server says testing is enabled (mock mode).
+// Esc closes it. It only appears when testing is enabled (mock mode, or the static browser demo).
 (function () {
   let panel = null;
   let typed = '';
 
-  const api = (body) => fetch('/api/test', {
-    method: body ? 'POST' : 'GET',
-    headers: body ? { 'Content-Type': 'application/json' } : {},
-    body: body ? JSON.stringify(body) : undefined,
-  }).then((r) => (r.ok ? r.json() : null));
+  // Goes to the server's /api/test, or to the in-browser mock engine on static hosting (see Data in app.js).
+  const api = (body) => Data.test(body).catch(() => null);
 
   const refreshDashboard = () => (typeof load === 'function' ? load().catch(() => {}) : null);
 

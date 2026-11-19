@@ -14,6 +14,12 @@ npm start          # checks every 5 minutes
 
 Open http://localhost:3000.
 
+## Online demo (GitHub Pages)
+
+https://samkiller222.github.io/VAC/ runs a **static demo**: GitHub Pages can't run the Node server, so when the dashboard finds no server behind it, `public/mock.js` runs the whole mock monitor in the visitor's browser (checks every 10 s, 24 h of seeded history, test menu included). Each visitor gets their own simulation; nothing is shared or saved.
+
+Pages setting: deploy from branch `main`, folder `/ (root)`. The root `index.html` forwards to `public/`.
+
 ## Hidden test menu
 
 Type **`test`** anywhere on the dashboard (or open `/#test`). Esc closes it.

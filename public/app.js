@@ -14,11 +14,36 @@ const el = (tag, attrs = {}, text) => {
   return n;
 };
 
+// Data source: the Node server's API if there is one, otherwise the in-browser mock engine
+// (mock.js). That fallback is what makes the dashboard work on static hosting like GitHub Pages.
+const Data = {
+  mode: null,
+  async init() {
+    if (this.mode) return;
+    try {
+      const r = await fetch('api/status', { cache: 'no-store' });
+      if (r.ok && (r.headers.get('content-type') || '').includes('json')) { this.mode = 'server'; return; }
+    } catch (e) { /* no server: fall through to static mode */ }
+    await window.MockEngine.start();
+    this.mode = 'static';
+  },
+  status() { return this.mode === 'server' ? fetch('api/status').then((r) => r.json()) : Promise.resolve(window.MockEngine.status()); },
+  history(hours) { return this.mode === 'server' ? fetch(`api/history?hours=${hours}`).then((r) => r.json()) : Promise.resolve(window.MockEngine.history(hours)); },
+  async test(body) {
+    await this.init();
+    if (this.mode === 'static') return window.MockEngine.test(body);
+    const r = await fetch('api/test', {
+      method: body ? 'POST' : 'GET',
+      headers: body ? { 'Content-Type': 'application/json' } : {},
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    return r.ok ? r.json() : null;
+  },
+};
+
 async function load() {
-  const [status, history] = await Promise.all([
-    fetch('/api/status').then((r) => r.json()),
-    fetch('/api/history?hours=24').then((r) => r.json()),
-  ]);
+  await Data.init();
+  const [status, history] = await Promise.all([Data.status(), Data.history(24)]);
   renderMeta(status);
   renderDiagnosis(status.diagnosis);
   renderMap(status.offices);
@@ -27,8 +52,8 @@ async function load() {
 
 function renderMeta(s) {
   document.getElementById('meta').textContent =
-    `${s.offices.length} VACs · checked every ${Math.round(s.intervalMs / 60000) || '<1'} min · updated ${new Date(s.generatedAt).toLocaleTimeString()}` +
-    (s.mock ? ' · MOCK DATA' : '');
+    `${s.offices.length} VACs · checked every ${s.intervalMs < 60000 ? `${Math.round(s.intervalMs / 1000)} s` : `${Math.round(s.intervalMs / 60000)} min`} · updated ${new Date(s.generatedAt).toLocaleTimeString()}` +
+    (s.static ? ' · STATIC DEMO (simulated in your browser)' : s.mock ? ' · MOCK DATA' : '');
 }
 
 function renderDiagnosis(lines) {
@@ -107,4 +132,4 @@ function renderHeatmap(offices, history) {
 }
 
 load().catch((e) => { document.getElementById('meta').textContent = `Failed to load: ${e.message}`; });
-setInterval(() => load().catch(() => {}), 60000);
+setInterval(() => load().catch(() => {}), 10000);
