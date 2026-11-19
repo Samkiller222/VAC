@@ -9,8 +9,8 @@ function generateHistory(hours = 24) {
   for (const t of config.offices) {
     let down = 0;
     for (let at = now - hours * 36e5; at < now; at += step) {
-      if (down === 0 && Math.random() < 0.004) down = 6 + Math.floor(Math.random() * 18); // 30 min to 2 h outage
-      const ok = down > 0 ? false : Math.random() > 0.02;
+      if (down === 0 && Math.random() < 0.0008) down = 6 + Math.floor(Math.random() * 18); // 30 min to 2 h outage
+      const ok = down > 0 ? false : Math.random() > 0.004;
       if (down > 0) down--;
       entries.push({ t: at, id: t.id, ok, open: isOpen(t, new Date(at)) });
     }

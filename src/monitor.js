@@ -4,7 +4,6 @@ const { tcpCheck, mockCheck } = require('./checker');
 const { isOpen } = require('./hours');
 const state = require('./state');
 const alerts = require('./alerts');
-const testControls = require('./testControls');
 
 const targets = config.offices.map((o) => ({ ...o, label: `${o.name} (${o.country}) -> Toppan` }));
 
@@ -23,7 +22,7 @@ async function runCycle() {
     const result = config.mock
       ? await mockCheck(target)
       : await tcpCheck(target.host, target.port, config.timeoutMs);
-    const open = testControls.ignoreHours || isOpen(target);
+    const open = isOpen(target); // always true while no VAC has opening hours configured
     const change = state.record(target.id, result, { open });
     if (open) await alerts.notify(target, change);
   });
@@ -32,11 +31,11 @@ async function runCycle() {
 
 // Plain-language hint: many VACs down at once points to a shared problem, one or two to a local one.
 function diagnose() {
-  const open = config.offices.filter((o) => state.getLive(o.id).status !== 'CLOSED');
-  const down = open.filter((o) => state.getLive(o.id).status === 'DOWN');
+  const all = config.offices;
+  const down = all.filter((o) => state.getLive(o.id).status === 'DOWN');
   if (!down.length) return [];
-  if (open.length >= 3 && down.length / open.length >= 0.5) {
-    return [`${down.length} of ${open.length} open VACs are down at once: likely a shared problem on the path to Toppan, not the VACs themselves`];
+  if (all.length >= 3 && down.length / all.length >= 0.5) {
+    return [`${down.length} of ${all.length} VACs are down at once: likely a shared problem on the path to Toppan, not the VACs themselves`];
   }
   return down.map((o) => `${o.name}: link to Toppan down (other VACs are fine, so likely local to this VAC)`);
 }

@@ -29,12 +29,12 @@ function mockCheck(target) {
   if (forced === 'down') return Promise.resolve({ ok: false, latencyMs: null, error: 'forced mock outage' });
   if (forced === 'up') return Promise.resolve({ ok: true, latencyMs: 50, error: null });
   let remaining = mockOutages.get(target.id) || 0;
-  if (remaining === 0 && Math.random() < 0.02) remaining = 3 + Math.floor(Math.random() * 6); // start an outage
+  if (remaining === 0 && Math.random() < 0.003) remaining = 3 + Math.floor(Math.random() * 6); // start an outage
   if (remaining > 0) {
     mockOutages.set(target.id, remaining - 1);
     return Promise.resolve({ ok: false, latencyMs: null, error: 'mock outage' });
   }
-  const blip = Math.random() < 0.03; // occasional single dropped check
+  const blip = Math.random() < 0.005; // occasional single dropped check
   return Promise.resolve(blip
     ? { ok: false, latencyMs: null, error: 'mock blip' }
     : { ok: true, latencyMs: 40 + Math.floor(Math.random() * 200), error: null });

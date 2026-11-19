@@ -3,7 +3,7 @@
 //   UP       last check passed
 //   WARN     1 to (threshold - 1) failures in a row (could be a blip)
 //   DOWN     threshold failures in a row -> alert
-//   CLOSED   office outside working hours (still checked, but not alerted)
+//   CLOSED   outside opening hours (only if hours are configured - currently none are)
 //   UNKNOWN  not checked yet
 const fs = require('fs');
 const config = require('./config');

@@ -36,8 +36,8 @@
     row.className = 'tm-row';
     row.append(
       button('Run check now', () => act({ action: 'runNow' })),
-      button('All down', () => act({ action: 'all', mode: 'down' }), 'tm-danger'),
-      button('All up', () => act({ action: 'all', mode: 'up' })),
+      button('All offline', () => act({ action: 'all', mode: 'down' }), 'tm-danger'),
+      button('All online', () => act({ action: 'all', mode: 'up' })),
       button('Clear overrides', () => act({ action: 'all', mode: 'auto' })),
     );
     panel.append(row);
@@ -50,14 +50,6 @@
     );
     panel.append(row2);
 
-    const hours = document.createElement('label');
-    hours.className = 'tm-check';
-    const box = document.createElement('input');
-    box.type = 'checkbox';
-    box.checked = data.ignoreHours;
-    box.addEventListener('change', () => act({ action: 'ignoreHours', value: box.checked }));
-    hours.append(box, ' Ignore office hours (treat every VAC as open)');
-    panel.append(hours);
 
     const list = document.createElement('div');
     list.className = 'tm-list';
@@ -67,7 +59,7 @@
       const name = document.createElement('span');
       name.textContent = `${v.name}, ${v.country}`;
       const select = document.createElement('select');
-      for (const [value, text] of [['auto', 'Normal'], ['up', 'Force up'], ['down', 'Force down']]) {
+      for (const [value, text] of [['auto', 'Normal'], ['up', 'Force online'], ['down', 'Force offline']]) {
         const opt = document.createElement('option');
         opt.value = value; opt.textContent = text;
         if ((data.overrides[v.id] || 'auto') === value) opt.selected = true;
@@ -81,7 +73,7 @@
 
     const hint = document.createElement('p');
     hint.className = 'tm-hint';
-    hint.textContent = 'Forced results apply from the next check. A VAC turns DOWN after 3 failed checks in a row, so press "Run check now" 3 times to see it straight away.';
+    hint.textContent = 'Forced results apply from the next check. A VAC goes offline after 3 failed checks in a row, so press "Run check now" 3 times to see it straight away.';
     panel.append(hint);
   }
 

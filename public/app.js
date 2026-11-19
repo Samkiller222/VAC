@@ -1,6 +1,9 @@
 // Dashboard: fetches /api/status and /api/history and draws the VAC -> Toppan heatmap.
 // Refreshes every 60 seconds. Contains no IPs or config - only what the API returns.
-const STATUS_CLASS = { UP: 'up', WARN: 'warn', DOWN: 'down', CLOSED: 'closed', UNKNOWN: 'none' };
+const STATUS_CLASS = { UP: 'up', WARN: 'warn', DOWN: 'down', UNKNOWN: 'none' };
+// A VAC is either online or offline. WARN = still online, but a recent check failed (not yet 3 in a row).
+const STATUS_LABEL = { UP: 'Online', WARN: 'Online (check failed)', DOWN: 'Offline', UNKNOWN: 'Not checked yet' };
+const label = (s) => STATUS_LABEL[s] || s;
 
 const ago = (t) => {
   if (!t) return 'never';
@@ -103,7 +106,7 @@ function setupMapTooltip() {
     const g = e.target.closest('g[data-id]');
     const o = g && lastStatus && lastStatus.offices.find((x) => x.id === g.dataset.id);
     if (!o) return hide();
-    tip.replaceChildren(el('b', {}, o.name), el('span', {}, `${o.country} · ${o.status} · last seen ${ago(o.lastSeen)}`));
+    tip.replaceChildren(el('b', {}, o.name), el('span', {}, `${o.country} · ${label(o.status)} · last seen ${ago(o.lastSeen)}`));
     tip.hidden = false;
     const pad = 14;
     const left = Math.min(e.clientX + pad, window.innerWidth - tip.offsetWidth - 8);
@@ -143,7 +146,7 @@ function renderMap(offices) {
   const X = (lon) => ((lon + 180) / 360) * 1000;
   const Y = (lat) => ((90 - lat) / 180) * 500;
   const svg = svgEl('svg', { viewBox: '0 14 1000 400', role: 'img', 'aria-label': 'Map of VAC locations and status' });
-  svg.append(svgEl('image', { href: 'world.svg?v=20261119c', x: 0, y: 14, width: 1000, height: 400 }));
+  svg.append(svgEl('image', { href: 'world.svg?v=20261119d', x: 0, y: 14, width: 1000, height: 400 }));
 
   // Draw problems (and search matches) last so they sit on top of nearby healthy dots
   const order = { DOWN: 3, WARN: 2, UP: 1 };
@@ -181,13 +184,13 @@ function renderHeatmap(offices, history) {
     table.append(r);
     for (const o of offices.filter((x) => x.region === region)) {
       const row = el('tr', { id: `row-${o.id}`, class: searchTerm ? (matchesSearch(o) ? 'match' : 'dim') : '' });
-      row.append(el('th', { title: `${o.country} · ${o.timezone}` }, o.name));
+      row.append(el('th', { title: `${o.name}, ${o.country}` }, o.name));
       (history.rows[o.id] || []).forEach((v, i) => {
         const hour = new Date(history.buckets[i]).toLocaleString();
         row.append(el('td', { class: `cell ${v || 'none'}`, title: `${o.name} · ${hour} · ${v || 'no data'}` }));
       });
       const now = el('td', { class: 'now' });
-      now.append(el('b', { class: STATUS_CLASS[o.status] }, ` ${o.status} `));
+      now.append(el('b', { class: STATUS_CLASS[o.status] }, ` ${label(o.status)} `));
       now.append(document.createTextNode(` · last seen ${ago(o.lastSeen)}`));
       row.append(now);
       table.append(row);

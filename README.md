@@ -22,6 +22,10 @@ Pages setting: deploy from branch `main`, folder `/ (root)`. The root `index.htm
 
 GitHub Pages lets browsers cache files for up to 10 minutes. The CSS and JS links in `public/index.html` carry a version tag (`?v=...`): **change it whenever you change those files**, so browsers never mix old and new files.
 
+## VAC list
+
+`config/offices.json` holds the 129 VACs listed on [Identità's visa extended service branches page](https://identita.gov.mt/central-visa-unit-visa-extended-service-branches/) (checked 19 Nov 2026), grouped into regions, with approximate city-level coordinates for the map. Opening hours are deliberately not used for now: each VAC is simply **online** or **offline**.
+
 ## Dashboard features
 
 - **World map**: one dot per VAC, coloured by live status. Hover a dot to see the VAC's name, status and when it was last reached.
@@ -33,12 +37,11 @@ GitHub Pages lets browsers cache files for up to 10 minutes. The CSS and JS link
 Type **`test`** anywhere on the dashboard (or open `/#test`). Esc closes it.
 
 - **Run check now**: runs a check cycle immediately instead of waiting for the interval
-- **All down / All up / Clear overrides**: force every VAC's result, or go back to normal mock behaviour
-- **Per-VAC dropdown**: Normal, Force up or Force down for one VAC
+- **All offline / All online / Clear overrides**: force every VAC's result, or go back to normal mock behaviour
+- **Per-VAC dropdown**: Normal, Force online or Force offline for one VAC
 - **Reseed 24 h history / Wipe history**: refill the heatmap with mock data, or clear it (click twice to confirm)
-- **Ignore office hours**: treats every VAC as open, so outages show red at any time of day
 
-A VAC turns DOWN after 3 failed checks, so after forcing one down press **Run check now** three times to see it straight away.
+A VAC goes offline after 3 failed checks in a row, so after forcing one offline press **Run check now** three times to see it straight away.
 
 The menu and its API (`/api/test`) **only work in mock mode**. With `MOCK=0` they return 404. Set `TEST_MENU=0` to switch the menu off in mock mode too. If you host it anywhere others can reach, set `DASH_USER` / `DASH_PASS`, since anyone who opens the dashboard could otherwise use the menu.
 
@@ -55,16 +58,17 @@ The menu and its API (`/api/test`) **only work in mock mode**. With `MOCK=0` the
 | `PORT` | `3000` | Dashboard port |
 | `ALERT_WEBHOOK` | – | Teams/Slack-style webhook URL for DOWN/RECOVERED alerts |
 | `DASH_USER` / `DASH_PASS` | – | Set both to put a login on the dashboard |
-| `MOCK_DOWN` | – | Mock mode only: comma-separated VAC ids to force down at start-up, e.g. `del,dac` |
+| `MOCK_DOWN` | – | Mock mode only: comma-separated VAC ids to force offline at start-up, e.g. `new-delhi,dhaka` |
 | `TEST_MENU` | `1` | `0` = disable the hidden test menu |
 
 ## Files
 
 ```
-config/offices.json   VACs: name, region, rough lat/lon (city level is fine), time zone, working hours, host, port
+config/offices.json   the 129 VACs from Identità's visa extended service branches page: name, country, region,
+                      rough lat/lon (city level), host, port (placeholders until VFS Global provides tunnel endpoints)
 src/checker.js        TCP check (used instead of ping, which is often blocked) + mock mode
-src/hours.js          working hours per VAC time zone -> grey "closed" cells
-src/state.js          UP / WARN / DOWN / CLOSED logic + history file (data/history.jsonl)
+src/hours.js          opening-hours support, currently unused (every VAC is simply online or offline)
+src/state.js          online / offline logic (UP, WARN, DOWN) + history file (data/history.jsonl)
 src/alerts.js         DOWN / RECOVERED alerts (console + optional webhook)
 src/monitor.js        one check cycle + diagnosis (one VAC down = local; most down = shared problem)
 src/server.js         dashboard + JSON API (/api/status, /api/history)

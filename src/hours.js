@@ -1,5 +1,7 @@
-// Works out whether an office is inside its working hours, in its own time zone,
-// so closed offices show grey instead of red.
+// Opening-hours support, currently UNUSED: no VAC in config/offices.json has "hours", so every VAC
+// counts as open and is simply online or offline. To use it later, add to a VAC:
+//   "timezone": "Asia/Kolkata", "hours": { "days": [1,2,3,4,5], "open": 9, "close": 16 }
+// and closed VACs will show as CLOSED instead of raising alerts.
 const DAY = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
 
 function isOpen(office, date = new Date()) {

@@ -1,6 +1,5 @@
 // Shared test settings, changed from the hidden test menu (mock mode only).
 //   overrides:   VAC id -> 'up' | 'down'   (anything not listed behaves normally)
-//   ignoreHours: true = treat every VAC as open, so outages show red even at night
 const config = require('./config');
 
 const overrides = new Map();
@@ -10,5 +9,4 @@ module.exports = {
   // The menu only works in mock mode, and can be switched off with TEST_MENU=0.
   enabled: config.mock && process.env.TEST_MENU !== '0',
   overrides,
-  ignoreHours: false,
 };

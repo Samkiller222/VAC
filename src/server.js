@@ -36,7 +36,7 @@ function sendJson(res, body) {
 }
 
 // Public view of a VAC: never includes host/port, so IPs never reach the browser.
-const publicOffice = (o) => ({ id: o.id, name: o.name, country: o.country, region: o.region, timezone: o.timezone, lat: o.lat, lon: o.lon, ...state.getLive(o.id) });
+const publicOffice = (o) => ({ id: o.id, name: o.name, country: o.country, region: o.region, lat: o.lat, lon: o.lon, ...state.getLive(o.id) });
 
 function statusPayload() {
   return {
@@ -78,11 +78,9 @@ function historyPayload(hours) {
 //   GET  /api/test   current test settings
 //   POST /api/test   { action: 'set', id, mode: 'auto'|'up'|'down' }
 //                    { action: 'all', mode: 'auto'|'up'|'down' }
-//                    { action: 'ignoreHours', value: true|false }
 //                    { action: 'runNow' } | { action: 'reseed' } | { action: 'reset' }
 const testPayload = () => ({
   enabled: testControls.enabled,
-  ignoreHours: testControls.ignoreHours,
   overrides: Object.fromEntries(testControls.overrides),
   vacs: config.offices.map((o) => ({ id: o.id, name: o.name, country: o.country })),
 });
@@ -108,8 +106,6 @@ async function handleTest(req, res) {
       setMode(body.id, body.mode); break;
     case 'all':
       config.offices.forEach((o) => setMode(o.id, body.mode)); break;
-    case 'ignoreHours':
-      testControls.ignoreHours = Boolean(body.value); break;
     case 'runNow':
       await runCycle(); break;
     case 'reseed':
