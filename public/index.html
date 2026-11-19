@@ -23,7 +23,14 @@
 
   <section id="diagnosis" hidden></section>
 
-  <h2>VAC locations <span class="muted">· live status</span></h2>
+  <div class="map-bar">
+    <h2>VAC locations <span class="muted">· live status</span></h2>
+    <div class="search">
+      <input id="vac-search" type="search" placeholder="Search VACs by name or country…" list="vac-list" autocomplete="off" aria-label="Search VACs">
+      <datalist id="vac-list"></datalist>
+      <span id="search-info" class="muted"></span>
+    </div>
+  </div>
   <div id="map" class="map"></div>
 
   <h2>VAC → Toppan links <span class="muted">· last 24 hours, one cell per hour</span></h2>

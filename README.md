@@ -20,6 +20,12 @@ https://samkiller222.github.io/VAC/ runs a **static demo**: GitHub Pages can't r
 
 Pages setting: deploy from branch `main`, folder `/ (root)`. The root `index.html` forwards to `public/`.
 
+## Dashboard features
+
+- **World map**: one dot per VAC, coloured by live status. Hover a dot to see the VAC's name, status and when it was last reached.
+- **Search**: type a VAC name, country or region above the map. Matches are highlighted on the map and in the heatmap, everything else is dimmed. Enter jumps to the first match in the heatmap; Esc clears the search.
+- **Heatmap**: last 24 hours per VAC, one cell per hour, grouped by region.
+
 ## Hidden test menu
 
 Type **`test`** anywhere on the dashboard (or open `/#test`). Esc closes it.

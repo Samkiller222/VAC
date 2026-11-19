@@ -45,9 +45,72 @@ async function load() {
   await Data.init();
   const [status, history] = await Promise.all([Data.status(), Data.history(24)]);
   renderMeta(status);
+  lastStatus = status;
+  lastHistory = history;
   renderDiagnosis(status.diagnosis);
-  renderMap(status.offices);
-  renderHeatmap(status.offices, history);
+  fillSearchList(status.offices);
+  renderVacs();
+}
+
+// --- Search: highlights matching VACs on the map and in the heatmap, dims the rest ---
+let lastStatus = null;
+let lastHistory = null;
+let searchTerm = '';
+
+const matchesSearch = (o) => {
+  if (!searchTerm) return false;
+  const q = searchTerm.toLowerCase();
+  return [o.name, o.country, o.id, o.region].some((v) => (v || '').toLowerCase().includes(q));
+};
+
+function renderVacs() {
+  if (!lastStatus) return;
+  renderMap(lastStatus.offices);
+  renderHeatmap(lastStatus.offices, lastHistory);
+  const info = document.getElementById('search-info');
+  if (!searchTerm) { info.textContent = ''; return; }
+  const n = lastStatus.offices.filter(matchesSearch).length;
+  info.textContent = n ? `${n} match${n === 1 ? '' : 'es'}` : 'No VAC matches';
+}
+
+function fillSearchList(offices) {
+  const list = document.getElementById('vac-list');
+  if (list.childElementCount === offices.length) return;
+  list.replaceChildren(...offices.map((o) => el('option', { value: o.name }, `${o.country}`)));
+}
+
+function setupSearch() {
+  const input = document.getElementById('vac-search');
+  input.addEventListener('input', () => { searchTerm = input.value.trim(); renderVacs(); });
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') { input.value = ''; searchTerm = ''; renderVacs(); }
+    if (e.key === 'Enter' && lastStatus) {
+      // Jump to the first matching row in the heatmap
+      const first = lastStatus.offices.find(matchesSearch);
+      const row = first && document.getElementById(`row-${first.id}`);
+      if (row) row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  });
+}
+
+// --- Map hover: custom tooltip with the VAC's name (works across the 10 s refreshes) ---
+function setupMapTooltip() {
+  const map = document.getElementById('map');
+  const tip = el('div', { id: 'map-tip', hidden: '' });
+  document.body.append(tip);
+  const hide = () => { tip.hidden = true; };
+  map.addEventListener('mousemove', (e) => {
+    const g = e.target.closest('g[data-id]');
+    const o = g && lastStatus && lastStatus.offices.find((x) => x.id === g.dataset.id);
+    if (!o) return hide();
+    tip.replaceChildren(el('b', {}, o.name), el('span', {}, `${o.country} · ${o.status} · last seen ${ago(o.lastSeen)}`));
+    tip.hidden = false;
+    const pad = 14;
+    const left = Math.min(e.clientX + pad, window.innerWidth - tip.offsetWidth - 8);
+    tip.style.left = `${left}px`;
+    tip.style.top = `${e.clientY + pad}px`;
+  });
+  map.addEventListener('mouseleave', hide);
 }
 
 function renderMeta(s) {
@@ -67,7 +130,7 @@ function renderDiagnosis(lines) {
 
 // World map: one dot per VAC at its rough location, coloured by live status.
 // Uses the same 1000x500 equirectangular grid as public/world.svg.
-// Labels only for VACs with a problem, so 100+ dots stay readable; hover any dot for its name.
+// Labels only for VACs with a problem or matching the search, so 100+ dots stay readable; hover any dot for its name.
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const svgEl = (tag, attrs = {}, text) => {
   const n = document.createElementNS(SVG_NS, tag);
@@ -82,18 +145,20 @@ function renderMap(offices) {
   const svg = svgEl('svg', { viewBox: '0 14 1000 400', role: 'img', 'aria-label': 'Map of VAC locations and status' });
   svg.append(svgEl('image', { href: 'world.svg', x: 0, y: 14, width: 1000, height: 400 }));
 
-  // Draw problems last so they sit on top of nearby healthy dots
+  // Draw problems (and search matches) last so they sit on top of nearby healthy dots
   const order = { DOWN: 3, WARN: 2, UP: 1 };
-  const sorted = offices.filter((o) => o.lat != null && o.lon != null)
-    .sort((a, b) => (order[a.status] || 0) - (order[b.status] || 0));
+  const rank = (o) => (matchesSearch(o) ? 10 : 0) + (order[o.status] || 0);
+  const sorted = offices.filter((o) => o.lat != null && o.lon != null).sort((a, b) => rank(a) - rank(b));
 
   for (const o of sorted) {
     const x = X(o.lon), y = Y(o.lat);
-    const g = svgEl('g');
-    g.append(svgEl('title', {}, `${o.name}, ${o.country} · ${o.status} · last seen ${ago(o.lastSeen)}`));
+    const match = matchesSearch(o);
+    const g = svgEl('g', { 'data-id': o.id, class: searchTerm ? (match ? 'match' : 'dim') : '' });
+    if (match) g.append(svgEl('circle', { class: 'hl', cx: x, cy: y, r: 10 }));
     if (o.status === 'DOWN') g.append(svgEl('circle', { class: 'pulse', cx: x, cy: y, r: 9 }));
-    g.append(svgEl('circle', { class: STATUS_CLASS[o.status] || 'none', cx: x, cy: y, r: o.status === 'DOWN' ? 5.5 : 4 }));
-    if (o.status === 'DOWN' || o.status === 'WARN') g.append(svgEl('text', { x: x + 8, y: y + 3 }, o.name));
+    g.append(svgEl('circle', { class: STATUS_CLASS[o.status] || 'none', cx: x, cy: y, r: o.status === 'DOWN' || match ? 5.5 : 4 }));
+    g.append(svgEl('circle', { class: 'hit', cx: x, cy: y, r: 10 })); // bigger invisible hover target
+    if (match || o.status === 'DOWN' || o.status === 'WARN') g.append(svgEl('text', { x: x + 12, y: y + 3 }, o.name));
     svg.append(g);
   }
   document.getElementById('map').replaceChildren(svg);
@@ -115,7 +180,7 @@ function renderHeatmap(offices, history) {
     r.append(el('th', { class: 'region', colspan: history.buckets.length + 2 }, region));
     table.append(r);
     for (const o of offices.filter((x) => x.region === region)) {
-      const row = el('tr');
+      const row = el('tr', { id: `row-${o.id}`, class: searchTerm ? (matchesSearch(o) ? 'match' : 'dim') : '' });
       row.append(el('th', { title: `${o.country} · ${o.timezone}` }, o.name));
       (history.rows[o.id] || []).forEach((v, i) => {
         const hour = new Date(history.buckets[i]).toLocaleString();
@@ -131,5 +196,7 @@ function renderHeatmap(offices, history) {
   document.getElementById('heatmap').replaceChildren(table);
 }
 
+setupSearch();
+setupMapTooltip();
 load().catch((e) => { document.getElementById('meta').textContent = `Failed to load: ${e.message}`; });
 setInterval(() => load().catch(() => {}), 10000);
