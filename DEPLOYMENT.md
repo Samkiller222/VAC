@@ -21,7 +21,7 @@ Size: 1 vCPU, 512 MB RAM and 1 GB disk is plenty for 129 VACs.
 The repo's `config/offices.json` has **placeholder addresses only** and stays that way.
 
 1. Copy `config/offices.json` to the server, e.g. `/etc/vac-monitor/offices.json`.
-2. For each VAC, set `host` (tunnel endpoint IP or hostname) and `port` from the details VFS Global provides.
+2. For each VAC, set `host` and `port` from the details VFS Global provides. The host must be an address **reachable through the VPN tunnel** from the monitoring server (for example the private IP of the VAC's router or a capture station), not the VPN gateway's public IP: only an address inside the tunnel proves the tunnel itself works.
 3. Make the file readable only by the service account: `chmod 640`, owned by `root:vacmon`.
 4. Point the app at it with `OFFICES_FILE=/etc/vac-monitor/offices.json`.
 
@@ -65,6 +65,16 @@ See the comments at the top of `Dockerfile`: the private list is mounted read-on
 
 Run the app on `127.0.0.1:3000` and put IT's standard reverse proxy in front (nginx, IIS with URL Rewrite, or the existing load balancer) with the internal certificate. Users only ever reach the HTTPS address.
 
+### Option: Cloudflare Tunnel + Access in front (instead of exposing the server)
+
+Useful because Toppan and VFS Global are outside the government network.
+
+- **The checks stay on the internal server.** They must run from Malta's side, through the VPN tunnels, to addresses that are only reachable inside the tunnels. Running the checks on Cloudflare Workers would only reach the VAC gateways' public addresses over the internet (which says nothing about the tunnel itself), and the checks would come from Cloudflare's shared IP addresses, which VFS Global cannot usefully allowlist.
+- **Cloudflare Tunnel** (`cloudflared` running on the internal server) publishes the dashboard on a hostname such as `vac-monitor.<domain>`. The connector makes an outbound connection to Cloudflare, so no inbound firewall port has to be opened and the server needs no public IP.
+- **Cloudflare Access** puts a login in front of the dashboard: Identità's single sign-on, or email one-time PINs for named Toppan and VFS Global staff. Access policies can also include or block IP lists, which is where the IP allowlist (section 6) would go, without code changes.
+- Point `cloudflared` at `http://127.0.0.1:3000`. With Access handling login, `DASH_USER` / `DASH_PASS` can stay as a second layer or be removed.
+- **Approval needed:** dashboard traffic (VAC names and online/offline status) passes through Cloudflare. Identità IT/security must approve this. The tunnel endpoint list never leaves the internal server.
+
 ## 5. Settings
 
 All settings are environment variables; `deploy/vac-monitor.env.example` lists the production values.
@@ -83,7 +93,7 @@ All settings are environment variables; `deploy/vac-monitor.env.example` lists t
 
 **Now:** HTTPS plus the dashboard login (`DASH_USER` / `DASH_PASS`).
 
-**Planned, not implemented yet:** an IP allowlist so only the government network and the fixed IPs of Toppan and VFS Global can reach the dashboard. The simplest place for it is the reverse proxy or firewall in step 4, before requests reach the app. Combine it with a login: an allowlist identifies the network, not the person. Longer term, Identità's single sign-on in front of the dashboard would replace the shared login.
+**Planned, not implemented yet:** an IP allowlist so only the government network and the fixed IPs of Toppan and VFS Global can reach the dashboard. The simplest place for it is the reverse proxy or firewall in step 4, or a Cloudflare Access policy if the Cloudflare option is used, before requests reach the app. Combine it with a login: an allowlist identifies the network, not the person. Longer term, Identità's single sign-on in front of the dashboard would replace the shared login.
 
 ## 7. Before go-live checklist
 
